@@ -1,0 +1,54 @@
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+
+uniform float time;
+uniform vec2 resolution;
+
+void main(void) {
+    vec2 uv = (gl_FragCoord.xy*2./resolution.x)-1.;
+
+    uv.y -= 1.2;
+    uv.x *= 1.5;
+    uv.x += uv.y*sin(time/1.5)/25.;
+    uv.x += (sin(time/3.5)/3.);
+
+    float s = sin(time/3.5+uv.y);
+    float c = cos(time/2.5+uv.y); // add 1.55 to sync with sin
+
+    vec3 color = vec3(0.);
+
+    // middle line
+    if (distance(0., uv.x) < 0.005){
+        color = vec3(.3);
+    }
+
+    // sin
+    if (0. < uv.x && uv.x < s
+            || s < uv.x && uv.x < 0.){
+        if (mod(uv.x, 0.05) <= 0.01
+                  && mod(uv.y, 0.05) <= 0.01
+                  || distance(s, uv.x) < 0.01){
+            color += vec3(1., .0, 0.);
+        }
+    }
+
+    // cos
+    if (0. < uv.x && uv.x < c
+            || c < uv.x && uv.x < 0.){
+        if (mod(uv.x, 0.05) <= 0.01
+                  && mod(uv.y, 0.05) <= 0.01
+                  || distance(c, uv.x) < 0.01){
+            color += vec3(.0, 0.0, 1.);
+        }
+    }
+
+    // glow
+     color += vec3(0.3 - distance(s, uv.x),
+                   0.,
+                   0.3 - distance(c, uv.x));
+
+    gl_FragColor = vec4(color, 1.0);
+}
